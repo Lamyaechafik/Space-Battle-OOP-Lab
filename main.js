@@ -1,56 +1,107 @@
-console.log('window is loaded');
-
-// Objects
-
-const hero = {
-    hull: 20,
-    firepower: 5,
-    accuracy: .7,
-    isAlive: true,
-    attack(target) {
-        let ranNum = Math.random();
-        console.log(`Accuracy threshold is ${ranNum}`);
-        if (ranNum < this.accuracy) {
-            console.log(`It's a direct hit!! Well done Capitan!`);
-            target.hull = target.hull - this.firepower;
-            console.log(`alien has ${target.hull} hull points left.`);
-            if (target.hull <= 0) {
-                target.isAlive = false;
-                console.log(`Alien ship is destroyed you have saved the Universe from complete destruction!!`);
-
-            }
-        } else {
-            console.log(`you missed!`);
-        }
+class Ship {
+    constructor(hull, firepower, accuracy,name) {
+        this.hull = hull;
+        this.firepower = firepower;
+        this.accuracy = accuracy;
+        this.name = name;
     }
+//attack the enemy 
+     attack(target) 
+    {
+		if (this.hull <= 0 || target.hull <= 0) return;
+
+		if (Math.random() < this.accuracy) {
+			target.hull -= this.firepower;
+			console.log(
+				`${this.name} hit yes  ${target.name}`,
+				`Hull: ${target.hull}`
+			);
+		} else
+			console.log(
+				`${this.name} missed the shot!`,
+				`${target.name} Hull: ${target.hull}`
+			);
+		if (target.hull <= 0) {
+			console.log(`%c${target.name} ship is destoryed!`, "color: pink;");
+			console.log("");
+		}
+	}
 }
-const alien = {
-    hull: Math.round((Math.random() * (6 - 3)) + 3),
-    firepower: Math.round((Math.random() * (4 - 2)) + 2),
-    accuracy: (Math.random() * (.8 - .6)) + .6, //for later figure out a way to make it to the hundredth?
-    isAlive: true,
-    attack(target) {
-        let ranNum = Math.random();
-        console.log(`Accuracy threshold is ${ranNum}`);
-        if (ranNum < this.accuracy) {
-            console.log(`You've been hit!`);
-            target.hull = target.hull - this.firepower;
-            console.log(`hero has ${target.hull} hull points left.`);
-            if (target.hull <= 0) {
-                target.isAlive = false;
-                console.log(`You have died, your people will now be used as cattle for the CRAVERSSS!!! GRRZZT ZOIK!`);
+    
 
-            }
-        } else {
-            console.log(`You dodged the attack!`);
-        }
-    }
+
+// Alien ships
+const Aliens = [];
+const shipsNum = 6;
+
+for (let i = 0; i < shipsNum; i++) {
+    const hull = Math.floor(Math.random() * 4) + 3;
+    const firepower = Math.floor(Math.random() * 3) + 2;
+    const accuracy = Math.random() * (0.2 + 0.6) + 0.2;
+
+    //create new instance to the array 
+    const alien = new Ship(
+        hull, 
+        firepower, 
+        accuracy);
+		getRandomAlienShipName
+    Aliens.push(alien);
 }
-const battle = (player, computer) => {
-    while (player.isAlive && computer.isAlive) {
-        player.attack(computer);
-        if (computer.isAlive) {
-            computer.attack(player);
-        }
-    }
+const ussAssembly = new Ship(20, 5, 0.7);
+
+let gameOver = false;
+//promise for the attack button
+const waitForAttack = () => {
+	return new Promise((resolve) => {
+		const attack = document.querySelector(".attack-button");
+		attack.onclick = () => {
+			resolve(); 
+		};
+	});
+};
+//
+
+(async () => {
+	for (let i = 0; i < shipsNum.length; i++) {
+		const alien = shipsNum[i];
+
+		await waitForAttack(); // Wait for the attack button to be pressed
+		const retreat = document.querySelector(".retreat-button");
+		retreat.onclick = () => {
+			gameOver = true;
+			console.log("%cUSS Assembly has retreated", "color: purple;");
+		};
+
+		if (gameOver) {
+			break;
+		}
+
+		while (ussAssembly.hull > 0 && alien.hull > 0) {
+			ussAssembly.attack(alien);
+			alien.attack(ussAssembly);
+			if (ussAssembly.hull <= 0) {
+				console.log("%cYou Lost!.", "color: red;");
+				gameOver = true;
+				break;
+			}
+		}
+
+		if (gameOver) {
+			break;
+		}
+
+		if (i === shipsNum.length - 1) {
+			console.log("%cYou Win the battle WOohoo!.", "color: green;");
+			gameOver = true;
+			break;
+		}
+	}
+})();
+function getRandomAlienShipName() {
+	const name = [
+		"Cabal", "Caitian", "Calamarain", "Caleban", "Calcinite", "Callineans", "Calvin",
+	];
+
+	const randomName = name[Math.floor(Math.random() * name.length)];
+	return randomName;
 }

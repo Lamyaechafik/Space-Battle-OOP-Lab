@@ -1,0 +1,26 @@
+
+
+.attack-button {
+    padding: 10px 20px;
+    background-color: #040025;
+    color: #c71e1e;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+    margin: 5px; 
+    background-color: #8cff00;
+
+
+}
+
+
+.retreat-button {
+    padding: 10px 20px;
+    background-color: #040025;
+    color: #14c54f;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+    margin: 5px; 
+    background-color: #fff700; 
+}
