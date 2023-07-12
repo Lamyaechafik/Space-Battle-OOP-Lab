@@ -1,81 +1,120 @@
-// create ship class
 class Ship {
-    constructor(name, hull, firepower, accuracy) {
-      this.name = name
-      this.hull = hull
-      this.firepower = firepower
-      this.accuracy = accuracy
-    }
-  }
-  
-  // create function to pick random number between given numbers in whole numbers
-  const randomWholeNumber = (min, max) => {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min + 1) + min);
-  }
-  
-  // create function to pick random number between given numbers in decimal
-  const randomDecimalNumber = (min, max) => {
-    return Math.random() * (max - min) + min;
-  }
-  
-  // human spaceship subclass
-  // let playerShip = new Ship ('USS Assembly', 20, 5, 0.7)
-  class humanShip extends Ship {
-    constructor (name, hull, firepower, accuracy) {
-      super(name, hull, firepower, accuracy)
-    }  
-    // create attack method
-    attack(target) {
-      if (Math.random() < this.accuracy) {
-        console.log('We damaged the enemy!');
-        target.hull -= this.firepower;
-        if (target.hull <= 0) {
-          console.log('We got them! Enemy ship has been destroyed');
-        } else {
-          console.log(`Hit! The enemy ship has ${target.hull} hull integrity remaining`);
-        }
-      } else {
-        console.log('You missed!');
-      }
-    }
-    retreat() {
-      console.log(`You have survived the battle and retreated, but at what cost?`);
-    }
-  }
-  
-  // alien spaceship subclass
-  // let alienShip = new Ship ('Bad Boy', randomWholeNumber(3, 6),randomWholeNumber(2, 4), randomDecimalNumber(0.6, 0.8))
-  
-  class alienShip extends Ship {
-    constructor (name, hull, firepower, accuracy) {
-      super (name, hull, firepower, accuracy)
-    } 
-    // create attack method
-    attack(player) {
-      if (Math.random() < this.accuracy) {
-        console.log('You have been hit!');
-        player.hull -= this.firepower;
-        if (player.hull <= 0) {
-          console.log('We are done for. The ship is destroyed!');
-        } else {
-          console.log(`Damaged received! The our ship has ${player.hull} hull integrity remaining`);
-        }
-      } else {
-        console.log('They missed!');
-      }
-    }
-  }
-  
-  
-  // make instance of human class
-  
-  let playerShip = new humanShip ('USS Assembly', 20, 5, 0.7)
-  
-  // make instance of alien class
-  
-  let foreignShip = new alienShip ('Bad Boy', randomWholeNumber(3, 6),randomWholeNumber(2, 4), randomDecimalNumber(0.6, 0.8))
-  
-  // playerShip.attack(foreignShip)
-  // foreignShip.attack(playerShip)
+	constructor(hull, firepower, accuracy, name) {
+		this.hull = hull;
+		this.firepower = firepower;
+		this.accuracy = accuracy;
+		this.name = name;
+	}
+
+	// Attack the other ship
+	attack(otherShip) {
+		if (this.hull <= 0 || otherShip.hull <= 0) return;
+
+		if (Math.random() < this.accuracy) {
+			otherShip.hull -= this.firepower;
+			console.log(
+				`${this.name} hit ${otherShip.name}`,
+				`Hull: ${otherShip.hull}`
+			);
+		} else
+			console.log(
+				`${this.name} missed!`,
+				`${otherShip.name} Hull: ${otherShip.hull}`
+			);
+
+		if (otherShip.hull <= 0) {
+			console.log(`%c${otherShip.name} ship is destoryed!`, "color: red;");
+			console.log("");
+		}
+	}
+}
+
+const alienShips = []; // Array to store the instances
+const numberOfShips = 6; // Number of instances you want to create
+
+// Set a defined number of alien ships with varied stats
+for (let i = 0; i < numberOfShips; i++) {
+	let hull = Math.floor(Math.random() * 4) + 3;
+	let firepower = Math.floor(Math.random() * 3) + 2;
+	let accuracy = Math.random() * 0.2 + 0.6;
+
+	const alienShip = new Ship(
+		hull,
+		firepower,
+		accuracy,
+		getRandomAlienShipName()
+	); // Create a new instance
+	alienShips.push(alienShip); // Add the instance to the array
+}
+
+const USS_Assembly = new Ship(20, 5, 0.7, "USS Assembly");
+
+let battleOver = false;
+
+// Function to create a promise that resolves when the attack button is pressed
+const waitForAttack = () => {
+	return new Promise((resolve) => {
+		const attack = document.querySelector(".attack-button");
+		attack.onclick = () => {
+			resolve(); // Resolve the promise when the attack button is pressed
+		};
+	});
+};
+
+// Battle until my ship is destroyed or all enemy ships are destroyed
+(async () => {
+	for (let i = 0; i < alienShips.length; i++) {
+		const alienShip = alienShips[i];
+
+		await waitForAttack(); // Wait for the attack button to be pressed
+		const retreat = document.querySelector(".retreat-button");
+		retreat.onclick = () => {
+			battleOver = true;
+			console.log("%cUSS Assembly has retreated", "color: yellow;");
+		};
+
+		if (battleOver) {
+			break;
+		}
+
+		while (USS_Assembly.hull > 0 && alienShip.hull > 0) {
+			USS_Assembly.attack(alienShip);
+			alienShip.attack(USS_Assembly);
+			if (USS_Assembly.hull <= 0) {
+				console.log("%cYou Lose.", "color: red;");
+				battleOver = true;
+				break;
+			}
+		}
+
+		if (battleOver) {
+			break;
+		}
+
+		if (i === alienShips.length - 1) {
+			console.log("%cYou Win.", "color: green;");
+			battleOver = true;
+			break;
+		}
+	}
+})();
+
+function getRandomAlienShipName() {
+	const name = [
+		"Zorthak",
+		"Xylophor",
+		"Vulcanix",
+		"Quasarion",
+		"Nebulor",
+		"Stellarium",
+		"Xor'gath",
+		"Valkyron",
+		"Zephyrion",
+		"Astronix",
+		"Lyra'xis",
+		"Nocturna",
+	];
+
+	const randomName = name[Math.floor(Math.random() * name.length)];
+	return randomName;
+}
